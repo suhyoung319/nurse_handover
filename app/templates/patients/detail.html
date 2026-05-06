@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}{{ patient.name }} — 환자 상세{% endblock %}
+{% block page_title %}<i class="bi bi-person-badge me-2 text-primary"></i>환자 상세{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Patient Info -->
+  <div class="col-lg-4">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>환자 정보</span>
+        <div class="d-flex gap-1">
+          <a href="{{ url_for('patients.edit', id=patient.id) }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>수정
+          </a>
+          <form method="POST" action="{{ url_for('patients.delete', id=patient.id) }}"
+                onsubmit="return confirm('정말 삭제하시겠습니까?')">
+            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#1a4fa0,#06b6d4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem;font-weight:700;flex-shrink:0;">
+            {{ patient.name[0] }}
+          </div>
+          <div class="ms-3">
+            <div class="fw-700 fs-5">{{ patient.name }}</div>
+            <div class="text-muted small">{{ patient.patient_number }}</div>
+            {% if patient.status == '입원중' %}
+              <span class="badge bg-success-subtle text-success">입원중</span>
+            {% elif patient.status == '퇴원' %}
+              <span class="badge bg-secondary-subtle text-secondary">퇴원</span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning">전동</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <table class="table table-sm table-borderless mb-0" style="font-size:0.85rem;">
+          <tr><th class="text-muted" style="width:80px;">나이/성별</th><td>{{ patient.age or '-' }}세 / {{ patient.gender or '-' }}</td></tr>
+          <tr><th class="text-muted">병동</th><td>{{ patient.ward }} {{ patient.room or '' }}호 {{ patient.bed or '' }}번 침대</td></tr>
+          <tr><th class="text-muted">진단명</th><td>{{ patient.diagnosis or '-' }}</td></tr>
+          <tr><th class="text-muted">입원일</th><td>{{ patient.admission_date.strftime('%Y-%m-%d') if patient.admission_date else '-' }}</td></tr>
+          <tr><th class="text-muted">퇴원예정</th><td>{{ patient.discharge_date.strftime('%Y-%m-%d') if patient.discharge_date else '-' }}</td></tr>
+        </table>
+
+        {% if patient.allergies %}
+        <div class="alert alert-danger p-2 mt-2 mb-0" style="font-size:0.82rem;border-radius:8px;">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i><strong>알레르기:</strong> {{ patient.allergies }}
+        </div>
+        {% endif %}
+
+        {% if patient.special_notes %}
+        <div class="alert alert-warning p-2 mt-2 mb-0" style="font-size:0.82rem;border-radius:8px;">
+          <i class="bi bi-info-circle-fill me-1"></i><strong>특이사항:</strong><br>{{ patient.special_notes }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <a href="{{ url_for('handover.create', patient_id=patient.id) }}" class="btn btn-primary w-100">
+      <i class="bi bi-journal-plus me-2"></i>인수인계 작성
+    </a>
+  </div>
+
+  <!-- Handover history -->
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-journal-text me-2 text-primary"></i>인수인계 이력 ({{ handovers|length }}건)
+      </div>
+      <div class="card-body p-0">
+        {% if handovers %}
+          {% for h in handovers %}
+          <div class="p-3 border-bottom {% if h.has_danger %}danger-row{% endif %}">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="d-flex align-items-center gap-2">
+                {% if h.has_danger %}
+                  <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                {% endif %}
+                <span class="shift-badge shift-{{ h.shift }}">{{ h.shift }}</span>
+                <span class="text-muted small">{{ h.from_user.name }} → {{ h.to_user.name if h.to_user else '미지정' }}</span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small">{{ h.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <a href="{{ url_for('handover.detail', id=h.id) }}" class="btn btn-xs btn-outline-primary" style="padding:1px 7px;font-size:0.75rem;">상세</a>
+              </div>
+            </div>
+            <p class="mb-1 small">{{ h.content }}</p>
+            {% if h.has_danger %}
+            <div>
+              {% for kw in h.danger_keywords.split(', ') %}
+              <span class="danger-badge me-1">{{ kw }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-journal-x fs-3 d-block mb-2"></i>
+          인수인계 내역이 없습니다.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

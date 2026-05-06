@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}환자 목록{% endblock %}
+{% block page_title %}<i class="bi bi-person-lines-fill me-2 text-primary"></i>환자 목록{% endblock %}
+
+{% block content %}
+<!-- Search / Filter -->
+<div class="card mb-4">
+  <div class="card-body py-3">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label mb-1 small fw-500">검색</label>
+        <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="환자명, 번호, 진단명">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label mb-1 small fw-500">상태</label>
+        <select name="status" class="form-select">
+          <option value="">전체</option>
+          <option value="입원중" {% if status=='입원중' %}selected{% endif %}>입원중</option>
+          <option value="퇴원" {% if status=='퇴원' %}selected{% endif %}>퇴원</option>
+          <option value="전동" {% if status=='전동' %}selected{% endif %}>전동</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label mb-1 small fw-500">병동</label>
+        <select name="ward" class="form-select">
+          <option value="">전체</option>
+          {% for w in wards %}
+          <option value="{{ w }}" {% if ward==w %}selected{% endif %}>{{ w }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>검색</button>
+        <a href="{{ url_for('patients.index') }}" class="btn btn-outline-secondary">초기화</a>
+        <a href="{{ url_for('patients.create') }}" class="btn btn-success ms-auto">
+          <i class="bi bi-person-plus me-1"></i>환자 등록
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Patient Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>전체 <strong>{{ patients.total }}</strong>명</span>
+  </div>
+  <div class="card-body p-0">
+    {% if patients.items %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">환자번호</th>
+            <th>이름</th>
+            <th>나이/성별</th>
+            <th>병동/호실</th>
+            <th>진단</th>
+            <th>상태</th>
+            <th>입원일</th>
+            <th class="text-center">작업</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in patients.items %}
+          <tr>
+            <td class="ps-3 text-muted small">{{ p.patient_number }}</td>
+            <td>
+              <a href="{{ url_for('patients.detail', id=p.id) }}" class="text-decoration-none fw-500">
+                {{ p.name }}
+              </a>
+            </td>
+            <td class="text-muted small">{{ p.age or '-' }}세 / {{ p.gender or '-' }}</td>
+            <td class="text-muted small">{{ p.ward }} {% if p.room %}{{ p.room }}호{% endif %} {% if p.bed %}{{ p.bed }}번 침대{% endif %}</td>
+            <td class="text-truncate" style="max-width:160px;">{{ p.diagnosis or '-' }}</td>
+            <td>
+              {% if p.status == '입원중' %}
+                <span class="badge bg-success-subtle text-success">입원중</span>
+              {% elif p.status == '퇴원' %}
+                <span class="badge bg-secondary-subtle text-secondary">퇴원</span>
+              {% else %}
+                <span class="badge bg-warning-subtle text-warning">전동</span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ p.admission_date.strftime('%Y-%m-%d') if p.admission_date else '-' }}</td>
+            <td class="text-center">
+              <div class="d-flex gap-1 justify-content-center">
+                <a href="{{ url_for('handover.create', patient_id=p.id) }}" class="btn btn-xs btn-outline-primary" title="인수인계 작성" style="padding:2px 8px;font-size:0.75rem;">
+                  <i class="bi bi-journal-plus"></i>
+                </a>
+                <a href="{{ url_for('patients.edit', id=p.id) }}" class="btn btn-xs btn-outline-secondary" title="수정" style="padding:2px 8px;font-size:0.75rem;">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="POST" action="{{ url_for('patients.delete', id=p.id) }}" class="d-inline"
+                      onsubmit="return confirm('{{ p.name }} 환자를 삭제하시겠습니까?')">
+                  <button type="submit" class="btn btn-xs btn-outline-danger" style="padding:2px 8px;font-size:0.75rem;">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    {% if patients.pages > 1 %}
+    <div class="d-flex justify-content-center py-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if patients.has_prev %}
+          <li class="page-item"><a class="page-link" href="?page={{ patients.prev_num }}&search={{ search }}&status={{ status }}&ward={{ ward }}">이전</a></li>
+          {% endif %}
+          {% for p in patients.iter_pages() %}
+            {% if p %}
+            <li class="page-item {% if p == patients.page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}&search={{ search }}&status={{ status }}&ward={{ ward }}">{{ p }}</a>
+            </li>
+            {% endif %}
+          {% endfor %}
+          {% if patients.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ patients.next_num }}&search={{ search }}&status={{ status }}&ward={{ ward }}">다음</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-person-x fs-2 d-block mb-2"></i>
+      검색 결과가 없습니다.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

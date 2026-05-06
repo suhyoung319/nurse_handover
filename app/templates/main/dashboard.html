@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}대시보드{% endblock %}
+{% block page_title %}<i class="bi bi-grid-1x2-fill me-2 text-primary"></i>대시보드{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="stat-card card" style="background:#eff6ff;">
+      <div class="stat-icon" style="background:#dbeafe;"><i class="bi bi-person-lines-fill text-primary"></i></div>
+      <div>
+        <div class="stat-label">현재 입원 환자</div>
+        <div class="stat-value">{{ total_patients }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card card" style="background:#f0fdf4;">
+      <div class="stat-icon" style="background:#dcfce7;"><i class="bi bi-journal-text text-success"></i></div>
+      <div>
+        <div class="stat-label">전체 인수인계</div>
+        <div class="stat-value">{{ total_handovers }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card card" style="background:#fff7ed;">
+      <div class="stat-icon" style="background:#fed7aa;"><i class="bi bi-calendar-check text-warning"></i></div>
+      <div>
+        <div class="stat-label">오늘 인수인계</div>
+        <div class="stat-value">{{ today_handovers }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card card" style="background:#fff1f2;">
+      <div class="stat-icon" style="background:#fecdd3;"><i class="bi bi-exclamation-triangle-fill text-danger"></i></div>
+      <div>
+        <div class="stat-label">위험 키워드 감지</div>
+        <div class="stat-value text-danger">{{ danger_handovers }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Recent handovers -->
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history me-2 text-primary"></i>최근 인수인계</span>
+        <a href="{{ url_for('handover.index') }}" class="btn btn-sm btn-outline-primary">전체 보기</a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_handovers %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3">환자</th>
+                <th>교대</th>
+                <th>작성자</th>
+                <th>내용</th>
+                <th>시간</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for h in recent_handovers %}
+              <tr class="{% if h.has_danger %}danger-row{% endif %}">
+                <td class="ps-3">
+                  {% if h.has_danger %}<i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>{% endif %}
+                  <a href="{{ url_for('patients.detail', id=h.patient.id) }}" class="text-decoration-none fw-500">
+                    {{ h.patient.name }}
+                  </a>
+                </td>
+                <td><span class="shift-badge shift-{{ h.shift }}">{{ h.shift }}</span></td>
+                <td class="text-muted">{{ h.from_user.name }}</td>
+                <td class="text-truncate" style="max-width:150px;">{{ h.content }}</td>
+                <td class="text-muted small">{{ h.created_at.strftime('%m/%d %H:%M') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-journal-x fs-3 d-block mb-2"></i>인수인계 내역이 없습니다.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Danger alerts -->
+  <div class="col-lg-5">
+    <div class="card h-100" style="border: 1px solid #fecdd3;">
+      <div class="card-header d-flex justify-content-between align-items-center" style="background:#fff1f2;border-bottom:1px solid #fecdd3;">
+        <span class="text-danger fw-600"><i class="bi bi-exclamation-octagon-fill me-2"></i>위험 키워드 감지 목록</span>
+        <a href="{{ url_for('handover.index') }}?danger_only=1" class="btn btn-sm btn-outline-danger">전체</a>
+      </div>
+      <div class="card-body p-0">
+        {% if danger_list %}
+          {% for h in danger_list %}
+          <a href="{{ url_for('handover.detail', id=h.id) }}" class="text-decoration-none">
+            <div class="d-flex align-items-start p-3 border-bottom" style="{% if not loop.last %}border-color:#fecdd3 !important;{% endif %}">
+              <div class="me-2 mt-1 text-danger"><i class="bi bi-exclamation-circle-fill"></i></div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                  <span class="fw-500 text-dark">{{ h.patient.name }}</span>
+                  <span class="text-muted small">{{ h.created_at.strftime('%m/%d %H:%M') }}</span>
+                </div>
+                <div class="mt-1">
+                  {% for kw in h.danger_keywords.split(', ') %}
+                  <span class="danger-badge me-1">{{ kw }}</span>
+                  {% endfor %}
+                </div>
+                <p class="text-muted small mb-0 mt-1 text-truncate">{{ h.content }}</p>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-shield-check fs-3 text-success d-block mb-2"></i>위험 키워드가 감지된 인수인계가 없습니다.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick action -->
+<div class="mt-4 p-3 card d-flex flex-row align-items-center justify-content-between flex-wrap gap-2">
+  <span class="text-muted small"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>빠른 작업</span>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('patients.create') }}" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-person-plus me-1"></i>환자 등록
+    </a>
+    <a href="{{ url_for('handover.create') }}" class="btn btn-sm btn-primary">
+      <i class="bi bi-journal-plus me-1"></i>인수인계 작성
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}병동 인수인계 시스템{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a4fa0;
+      --primary-light: #2563eb;
+      --primary-dark: #0f2d5a;
+      --accent: #06b6d4;
+      --danger-bg: #fff1f2;
+      --danger-border: #fda4af;
+      --sidebar-width: 260px;
+    }
+    * { font-family: 'Noto Sans KR', sans-serif; }
+    body { background: #f0f4f8; min-height: 100vh; }
+
+    /* Sidebar */
+    #sidebar {
+      width: var(--sidebar-width);
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
+      position: fixed; top: 0; left: 0; z-index: 100;
+      display: flex; flex-direction: column;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    }
+    .sidebar-brand {
+      padding: 1.5rem 1.2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-brand h5 {
+      color: #fff; font-weight: 700; font-size: 1rem; margin: 0;
+      letter-spacing: -0.3px;
+    }
+    .sidebar-brand small { color: rgba(255,255,255,0.5); font-size: 0.72rem; }
+    .sidebar-nav { padding: 1rem 0; flex: 1; }
+    .nav-section-label {
+      color: rgba(255,255,255,0.4); font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 0.8rem 1.4rem 0.3rem;
+    }
+    .sidebar-nav .nav-link {
+      color: rgba(255,255,255,0.75); padding: 0.65rem 1.4rem;
+      border-radius: 0; transition: all 0.2s;
+      display: flex; align-items: center; gap: 0.7rem;
+      font-size: 0.88rem; font-weight: 400;
+    }
+    .sidebar-nav .nav-link:hover,
+    .sidebar-nav .nav-link.active {
+      color: #fff; background: rgba(255,255,255,0.12);
+      border-left: 3px solid var(--accent);
+      padding-left: calc(1.4rem - 3px);
+    }
+    .sidebar-nav .nav-link i { font-size: 1rem; width: 1.2rem; text-align: center; }
+    .sidebar-footer {
+      padding: 1rem 1.2rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .user-chip {
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+    }
+    .user-info small { color: rgba(255,255,255,0.5); font-size: 0.7rem; display: block; }
+    .user-info span { color: #fff; font-size: 0.85rem; font-weight: 500; }
+
+    /* Main content */
+    #main-content {
+      margin-left: var(--sidebar-width);
+      min-height: 100vh;
+    }
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0.8rem 1.8rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .topbar-title { font-weight: 600; color: #1e293b; font-size: 1rem; }
+    .content-area { padding: 1.8rem; }
+
+    /* Cards */
+    .card { border: none; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.07); }
+    .card-header {
+      background: #fff; border-bottom: 1px solid #f1f5f9;
+      border-radius: 12px 12px 0 0 !important;
+      padding: 1rem 1.4rem; font-weight: 600; color: #1e293b;
+    }
+
+    /* Stat cards */
+    .stat-card {
+      border-radius: 14px; padding: 1.4rem;
+      display: flex; align-items: center; gap: 1.2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      border: none; transition: transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-icon {
+      width: 54px; height: 54px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; flex-shrink: 0;
+    }
+    .stat-label { font-size: 0.78rem; color: #64748b; font-weight: 500; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: #1e293b; line-height: 1.1; }
+
+    /* Danger badge */
+    .danger-badge {
+      background: var(--danger-bg); border: 1px solid var(--danger-border);
+      color: #be123c; border-radius: 8px; padding: 0.2rem 0.6rem;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .danger-row { background: #fff8f8 !important; }
+
+    /* Alert danger keyword box */
+    #keyword-alert {
+      display: none;
+      border-left: 4px solid #ef4444;
+      background: #fff1f2; border-radius: 8px;
+      padding: 0.8rem 1rem; margin-top: 0.5rem;
+    }
+
+    /* Tables */
+    .table th { font-size: 0.78rem; color: #64748b; font-weight: 600; border-top: none; }
+    .table td { font-size: 0.87rem; vertical-align: middle; }
+    .table-hover tbody tr:hover { background: #f8fafc; }
+
+    /* Forms */
+    .form-label { font-weight: 500; font-size: 0.85rem; color: #374151; }
+    .form-control, .form-select {
+      border-radius: 8px; font-size: 0.88rem;
+      border-color: #d1d5db;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    /* Buttons */
+    .btn { border-radius: 8px; font-weight: 500; font-size: 0.87rem; }
+    .btn-primary { background: var(--primary-light); border-color: var(--primary-light); }
+    .btn-primary:hover { background: var(--primary); border-color: var(--primary); }
+
+    /* Shift badges */
+    .shift-badge {
+      font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+    }
+    .shift-주간 { background: #fef3c7; color: #92400e; }
+    .shift-야간 { background: #ede9fe; color: #5b21b6; }
+    .shift-심야 { background: #1e293b; color: #e2e8f0; }
+
+    .page-link { border-radius: 6px !important; }
+
+    @media (max-width: 768px) {
+      #sidebar { width: 0; overflow: hidden; }
+      #main-content { margin-left: 0; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+<!-- Sidebar -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <i class="bi bi-hospital text-info fs-4"></i>
+      <div>
+        <h5 class="mb-0">병동 인수인계</h5>
+        <small>Ward Handover System</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">메인</div>
+    <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+      <i class="bi bi-grid-1x2-fill"></i> 대시보드
+    </a>
+
+    <div class="nav-section-label mt-2">환자 관리</div>
+    <a href="{{ url_for('patients.index') }}" class="nav-link {% if 'patients' in request.endpoint %}active{% endif %}">
+      <i class="bi bi-person-lines-fill"></i> 환자 목록
+    </a>
+    <a href="{{ url_for('patients.create') }}" class="nav-link">
+      <i class="bi bi-person-plus-fill"></i> 환자 등록
+    </a>
+
+    <div class="nav-section-label mt-2">인수인계</div>
+    <a href="{{ url_for('handover.index') }}" class="nav-link {% if request.endpoint == 'handover.index' %}active{% endif %}">
+      <i class="bi bi-journal-text"></i> 인수인계 목록
+    </a>
+    <a href="{{ url_for('handover.create') }}" class="nav-link">
+      <i class="bi bi-journal-plus"></i> 인수인계 작성
+    </a>
+    <a href="{{ url_for('handover.index') }}?danger_only=1" class="nav-link">
+      <i class="bi bi-exclamation-triangle-fill text-warning"></i> 위험 알림
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar">{{ current_user.name[0] }}</div>
+      <div class="user-info">
+        <span>{{ current_user.name }}</span>
+        <small>{{ current_user.role }} · {{ current_user.ward or '병동 미지정' }}</small>
+      </div>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-light w-100 mt-2">
+      <i class="bi bi-box-arrow-left me-1"></i> 로그아웃
+    </a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div id="main-content">
+  <div class="topbar">
+    <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-primary-subtle text-primary fw-normal">
+        <i class="bi bi-clock me-1"></i>
+        <span id="clock"></span>
+      </span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert" style="border-radius:10px;border:none;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+{% else %}
+<!-- Unauthenticated pages -->
+<div id="main-content" style="margin-left:0">
+  <div class="content-area">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {{ self.content() }}
+  </div>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Live clock
+  function updateClock() {
+    const el = document.getElementById('clock');
+    if (el) el.textContent = new Date().toLocaleTimeString('ko-KR');
+  }
+  updateClock(); setInterval(updateClock, 1000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

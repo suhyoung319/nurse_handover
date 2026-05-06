@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}회원가입 — 병동 인수인계{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5" style="background: linear-gradient(135deg, #0f2d5a 0%, #1a4fa0 50%, #0891b2 100%);">
+  <div class="card shadow-lg" style="width:100%;max-width:500px;border-radius:20px;">
+    <div class="card-body p-5">
+      <div class="text-center mb-4">
+        <div style="width:56px;height:56px;background:linear-gradient(135deg,#1a4fa0,#06b6d4);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem;">
+          <i class="bi bi-person-plus-fill text-white fs-4"></i>
+        </div>
+        <h5 class="fw-bold mb-0">회원가입</h5>
+        <p class="text-muted small mt-1">의료진 계정을 생성하세요</p>
+      </div>
+
+      <form method="POST">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label">아이디 <span class="text-danger">*</span></label>
+            <input type="text" name="username" class="form-control" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label">이름 <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">이메일 <span class="text-danger">*</span></label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label">직종</label>
+            <select name="role" class="form-select">
+              <option value="nurse">간호사</option>
+              <option value="doctor">의사</option>
+              <option value="admin">관리자</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">담당 병동</label>
+            <input type="text" name="ward" class="form-control" placeholder="예: 3내과">
+          </div>
+          <div class="col-6">
+            <label class="form-label">비밀번호 <span class="text-danger">*</span></label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label">비밀번호 확인 <span class="text-danger">*</span></label>
+            <input type="password" name="confirm_password" class="form-control" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 mt-4">
+          <i class="bi bi-person-check-fill me-2"></i>가입 완료
+        </button>
+      </form>
+
+      <p class="text-center text-muted small mt-3 mb-0">
+        이미 계정이 있으신가요?
+        <a href="{{ url_for('auth.login') }}" class="text-primary">로그인</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

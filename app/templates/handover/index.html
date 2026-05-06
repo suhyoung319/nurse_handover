@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}인수인계 목록{% endblock %}
+{% block page_title %}<i class="bi bi-journal-text me-2 text-primary"></i>인수인계 목록{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label mb-1 small fw-500">교대</label>
+        <select name="shift" class="form-select form-select-sm">
+          <option value="">전체</option>
+          <option value="주간" {% if shift=='주간' %}selected{% endif %}>주간</option>
+          <option value="야간" {% if shift=='야간' %}selected{% endif %}>야간</option>
+          <option value="심야" {% if shift=='심야' %}selected{% endif %}>심야</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <div class="form-check mb-0">
+          <input type="checkbox" name="danger_only" value="1" id="dangerOnly" class="form-check-input"
+                 {% if danger_only %}checked{% endif %}>
+          <label class="form-check-label small" for="dangerOnly">위험 키워드만</label>
+        </div>
+      </div>
+      <div class="col-md-6 d-flex gap-2 justify-content-end">
+        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>필터</button>
+        <a href="{{ url_for('handover.index') }}" class="btn btn-sm btn-outline-secondary">초기화</a>
+        <a href="{{ url_for('handover.create') }}" class="btn btn-sm btn-success">
+          <i class="bi bi-journal-plus me-1"></i>인수인계 작성
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">전체 <strong>{{ handovers.total }}</strong>건</div>
+  <div class="card-body p-0">
+    {% if handovers.items %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">환자</th>
+            <th>교대</th>
+            <th>인수자</th>
+            <th>인계자</th>
+            <th>내용</th>
+            <th>위험</th>
+            <th>작성일시</th>
+            <th class="text-center">작업</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in handovers.items %}
+          <tr class="{% if h.has_danger %}danger-row{% endif %}">
+            <td class="ps-3">
+              <a href="{{ url_for('patients.detail', id=h.patient.id) }}" class="text-decoration-none fw-500">
+                {{ h.patient.name }}
+              </a>
+              <div class="text-muted small">{{ h.patient.ward }}</div>
+            </td>
+            <td><span class="shift-badge shift-{{ h.shift }}">{{ h.shift }}</span></td>
+            <td class="small">{{ h.from_user.name }}</td>
+            <td class="small text-muted">{{ h.to_user.name if h.to_user else '미지정' }}</td>
+            <td class="text-truncate small" style="max-width:200px;">{{ h.content }}</td>
+            <td>
+              {% if h.has_danger %}
+                <span class="danger-badge"><i class="bi bi-exclamation-triangle-fill me-1"></i>위험</span>
+              {% else %}
+                <span class="text-success small"><i class="bi bi-check-circle"></i></span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">{{ h.created_at.strftime('%m/%d %H:%M') }}</td>
+            <td class="text-center">
+              <div class="d-flex gap-1 justify-content-center">
+                <a href="{{ url_for('handover.detail', id=h.id) }}" class="btn btn-xs btn-outline-primary" style="padding:2px 8px;font-size:0.75rem;">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{{ url_for('handover.edit', id=h.id) }}" class="btn btn-xs btn-outline-secondary" style="padding:2px 8px;font-size:0.75rem;">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="POST" action="{{ url_for('handover.delete', id=h.id) }}" class="d-inline"
+                      onsubmit="return confirm('삭제하시겠습니까?')">
+                  <button type="submit" class="btn btn-xs btn-outline-danger" style="padding:2px 8px;font-size:0.75rem;">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if handovers.pages > 1 %}
+    <div class="d-flex justify-content-center py-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if handovers.has_prev %}
+          <li class="page-item"><a class="page-link" href="?page={{ handovers.prev_num }}&shift={{ shift }}&danger_only={{ danger_only }}">이전</a></li>
+          {% endif %}
+          {% for p in handovers.iter_pages() %}
+            {% if p %}
+            <li class="page-item {% if p == handovers.page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}&shift={{ shift }}&danger_only={{ danger_only }}">{{ p }}</a>
+            </li>
+            {% endif %}
+          {% endfor %}
+          {% if handovers.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ handovers.next_num }}&shift={{ shift }}&danger_only={{ danger_only }}">다음</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-journal-x fs-3 d-block mb-2"></i>인수인계 내역이 없습니다.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

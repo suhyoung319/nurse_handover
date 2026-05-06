@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{% if patient %}환자 수정{% else %}환자 등록{% endif %}{% endblock %}
+{% block page_title %}
+  <i class="bi bi-person-{% if patient %}gear{% else %}plus-fill{% endif %} me-2 text-primary"></i>
+  {% if patient %}환자 정보 수정{% else %}환자 등록{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">기본 정보</div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">환자번호 <span class="text-danger">*</span></label>
+              <input type="text" name="patient_number" class="form-control"
+                     value="{{ patient.patient_number if patient else '' }}"
+                     {% if patient %}readonly{% endif %} required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">이름 <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control"
+                     value="{{ patient.name if patient else '' }}" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">나이</label>
+              <input type="number" name="age" class="form-control" min="0" max="150"
+                     value="{{ patient.age if patient else '' }}">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">성별</label>
+              <select name="gender" class="form-select">
+                <option value="">선택</option>
+                <option value="남" {% if patient and patient.gender=='남' %}selected{% endif %}>남</option>
+                <option value="여" {% if patient and patient.gender=='여' %}selected{% endif %}>여</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">병동 <span class="text-danger">*</span></label>
+              <input type="text" name="ward" class="form-control" placeholder="예: 3내과"
+                     value="{{ patient.ward if patient else '' }}" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">호실</label>
+              <input type="text" name="room" class="form-control" placeholder="예: 301"
+                     value="{{ patient.room if patient else '' }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">침대번호</label>
+              <input type="text" name="bed" class="form-control" placeholder="예: A"
+                     value="{{ patient.bed if patient else '' }}">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">진단명</label>
+              <input type="text" name="diagnosis" class="form-control" placeholder="주진단명"
+                     value="{{ patient.diagnosis if patient else '' }}">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">입원일</label>
+              <input type="date" name="admission_date" class="form-control"
+                     value="{{ patient.admission_date.strftime('%Y-%m-%d') if patient and patient.admission_date else '' }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">퇴원 예정일</label>
+              <input type="date" name="discharge_date" class="form-control"
+                     value="{{ patient.discharge_date.strftime('%Y-%m-%d') if patient and patient.discharge_date else '' }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">상태</label>
+              <select name="status" class="form-select">
+                <option value="입원중" {% if not patient or patient.status=='입원중' %}selected{% endif %}>입원중</option>
+                <option value="퇴원" {% if patient and patient.status=='퇴원' %}selected{% endif %}>퇴원</option>
+                <option value="전동" {% if patient and patient.status=='전동' %}selected{% endif %}>전동</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">알레르기</label>
+              <input type="text" name="allergies" class="form-control" placeholder="예: 페니실린, 아스피린"
+                     value="{{ patient.allergies if patient else '' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">특이사항</label>
+              <textarea name="special_notes" class="form-control" rows="3"
+                        placeholder="낙상 위험, 격리 여부, 보호자 연락처 등">{{ patient.special_notes if patient else '' }}</textarea>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>
+              {% if patient %}수정 저장{% else %}환자 등록{% endif %}
+            </button>
+            <a href="{{ url_for('patients.index') }}" class="btn btn-outline-secondary">취소</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
