@@ -9,7 +9,6 @@ Docker 없이 **Windows 로컬 환경**에서 바로 실행합니다.
 
 ```
 nurse_handover/
-├── run.bat                    ← Windows 실행 파일 (더블클릭)
 ├── run.py                     ← Flask 진입점
 ├── config.py                  ← DB URI 조립 + 앱 설정
 ├── .env                       ← 실제 DB 접속정보 (직접 생성, Git 제외)
@@ -84,16 +83,6 @@ FLASK_ENV=development
 ---
 
 ## ▶️ 실행 방법
-
-### 방법 A — 더블클릭 (권장)
-
-탐색기에서 **`run.bat`** 을 더블클릭합니다.
-
-- 최초 실행 시 가상환경(venv) 자동 생성
-- 패키지 자동 설치 (Flask, PyMySQL 등)
-- 브라우저 자동 오픈 → http://localhost:5000
-
-### 방법 B — 명령 프롬프트 (수동)
 
 ```cmd
 :: 프로젝트 폴더로 이동
