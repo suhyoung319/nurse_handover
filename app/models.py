@@ -145,6 +145,12 @@ class Handover(db.Model):
     has_danger      = db.Column(db.Boolean,  default=False)
     danger_keywords = db.Column(db.Text)
     priority        = db.Column(db.String(10), default='NORMAL')  # NEW: URGENT/HIGH/NORMAL
+    handover_type  = db.Column(db.String(20), default='NOTICE')
+    status         = db.Column(db.String(20), default='PENDING')
+    cancelled_at   = db.Column(db.DateTime)
+    cancelled_by   = db.Column(db.Integer, db.ForeignKey('users.id'))
+    transferred_at = db.Column(db.DateTime)
+    transferred_to = db.Column(db.Integer, db.ForeignKey('users.id'))
     is_confirmed    = db.Column(db.Boolean,  default=False)       # NEW: 인계자 확인 여부
     confirmed_at    = db.Column(db.DateTime)                      # NEW: 확인 시각
     confirmed_by    = db.Column(db.Integer,  db.ForeignKey('users.id'))  # NEW: 확인자

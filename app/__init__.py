@@ -13,6 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from config import Config
 
+
 db           = SQLAlchemy()
 login_manager = LoginManager()
 
@@ -35,10 +36,13 @@ def create_app():
     from app.routes.patients import patients_bp
     from app.routes.handover import handover_bp
     from app.routes.audit    import audit_bp
+    
 
     # REST API
     from app.api.handover import api_handover_bp
     from app.api.stats    import api_stats_bp
+    from app.routes.inbox       import inbox_bp
+    from app.api.notifications  import api_notifications_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -47,6 +51,8 @@ def create_app():
     app.register_blueprint(audit_bp)
     app.register_blueprint(api_handover_bp)
     app.register_blueprint(api_stats_bp)
+    app.register_blueprint(inbox_bp)
+    app.register_blueprint(api_notifications_bp)
 
     # ── 전역 에러 핸들러 ───────────────────────────────────────
     @app.errorhandler(403)

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}{% if handover %}인수인계 수정{% else %}인수인계 작성{% endif %}{% endblock %}
+
 {% block page_title %}
   <i class="bi bi-journal-{% if handover %}pen{% else %}plus{% endif %} me-2 text-primary"></i>
   {% if handover %}인수인계 수정{% else %}인수인계 작성{% endif %}
@@ -13,6 +14,7 @@
       <div class="card-body">
         <form method="POST" id="handoverForm">
           <div class="row g-3">
+
             <div class="col-md-6">
               <label class="form-label">환자 <span class="text-danger">*</span></label>
               <select name="patient_id" class="form-select" required>
@@ -26,6 +28,30 @@
                 {% endfor %}
               </select>
             </div>
+
+            <div class="col-md-4">
+              <label class="form-label">인수인계 타입</label>
+              <select name="handover_type" class="form-select" id="handoverType">
+                <option value="NOTICE"
+                  {% if handover and handover.handover_type == 'NOTICE' %}selected{% endif %}>
+                  NOTICE — 참고 공유
+                </option>
+                <option value="ASSIGNMENT"
+                  {% if handover and handover.handover_type == 'ASSIGNMENT' %}selected{% endif %}>
+                  ASSIGNMENT — 실제 담당 인계
+                </option>
+                <option value="ESCALATION"
+                  {% if handover and handover.handover_type == 'ESCALATION' %}selected{% endif %}>
+                  ESCALATION — 상급자 보고
+                </option>
+              </select>
+
+              <div id="assignmentWarning" class="text-warning small mt-1" style="display:none;">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                ASSIGNMENT는 환자당 동시에 1건만 가능합니다.
+              </div>
+            </div>
+
             <div class="col-md-3">
               <label class="form-label">교대 구분</label>
               <select name="shift" class="form-select">
@@ -34,6 +60,7 @@
                 <option value="심야" {% if handover and handover.shift=='심야' %}selected{% endif %}>심야 (23:00~07:00)</option>
               </select>
             </div>
+
             <div class="col-md-3">
               <label class="form-label">인계 받는 의료진</label>
               <select name="to_user_id" class="form-select">
@@ -62,16 +89,19 @@
               <textarea name="vital_signs" class="form-control keyword-target" rows="3"
                         placeholder="BP: 120/80&#10;HR: 72&#10;RR: 18&#10;BT: 36.5°C&#10;SpO2: 98%">{{ handover.vital_signs if handover else '' }}</textarea>
             </div>
+
             <div class="col-md-4">
               <label class="form-label"><i class="bi bi-capsule me-1 text-success"></i>투약 정보</label>
               <textarea name="medications" class="form-control keyword-target" rows="3"
                         placeholder="투약명, 용량, 횟수&#10;예: 아스피린 100mg QD">{{ handover.medications if handover else '' }}</textarea>
             </div>
+
             <div class="col-md-4">
               <label class="form-label"><i class="bi bi-bandaid me-1 text-warning"></i>처치 및 시술</label>
               <textarea name="procedures" class="form-control keyword-target" rows="3"
                         placeholder="드레싱, 주사, 검사 등&#10;예: 매일 07시 상처 드레싱">{{ handover.procedures if handover else '' }}</textarea>
             </div>
+
           </div>
 
           <div class="d-flex gap-2 mt-4">
@@ -85,10 +115,11 @@
       </div>
     </div>
 
-    <!-- Keyword legend -->
     <div class="card mt-3" style="border:1px solid #fecdd3;">
       <div class="card-body py-2 px-3">
-        <small class="text-danger fw-500"><i class="bi bi-shield-exclamation me-1"></i>위험 키워드 목록</small>
+        <small class="text-danger fw-500">
+          <i class="bi bi-shield-exclamation me-1"></i>위험 키워드 목록
+        </small>
         <div class="mt-1 d-flex flex-wrap gap-1">
           {% set keywords = ['낙상','자살','자해','무의식','심정지','호흡곤란','경련','발작','쇼크','알레르기','출혈','혼수','섬망','패혈증','응급','즉시','위험','악화','급격','사망','DNR','CPR'] %}
           {% for kw in keywords %}
@@ -97,22 +128,25 @@
         </div>
       </div>
     </div>
+
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Real-time danger keyword detection via AJAX
 const targets = document.querySelectorAll('.keyword-target');
 const alert = document.getElementById('keyword-alert');
 const kwList = document.getElementById('keyword-list');
 
 let debounceTimer;
+
 function checkKeywords() {
   clearTimeout(debounceTimer);
+
   debounceTimer = setTimeout(() => {
     const combined = Array.from(targets).map(t => t.value).join(' ');
+
     fetch('{{ url_for("handover.check_keywords") }}', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -133,7 +167,20 @@ function checkKeywords() {
 }
 
 targets.forEach(el => el.addEventListener('input', checkKeywords));
-// Run on load for edit mode
-if (document.querySelector('.keyword-target').value) checkKeywords();
+
+if (document.querySelector('.keyword-target').value) {
+  checkKeywords();
+}
+
+const handoverType = document.getElementById('handoverType');
+const assignmentWarning = document.getElementById('assignmentWarning');
+
+function toggleAssignmentWarning() {
+  assignmentWarning.style.display =
+    handoverType.value === 'ASSIGNMENT' ? 'block' : 'none';
+}
+
+handoverType.addEventListener('change', toggleAssignmentWarning);
+toggleAssignmentWarning();
 </script>
 {% endblock %}
