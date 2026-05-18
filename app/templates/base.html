@@ -29,19 +29,19 @@
       box-shadow: 4px 0 20px rgba(0,0,0,0.15);
       overflow-y: auto;
     }
-    .sidebar-brand { padding: 1.5rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-brand { padding: 1.2rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .sidebar-brand h5 { color: #fff; font-weight: 700; font-size: 1rem; margin: 0; }
     .sidebar-brand small { color: rgba(255,255,255,0.5); font-size: 0.72rem; }
-    .sidebar-nav { padding: 1rem 0; flex: 1; }
+    .sidebar-nav { padding: 0.6rem 0; flex: 1; }
     .nav-section-label {
-      color: rgba(255,255,255,0.4); font-size: 0.68rem; font-weight: 600;
+      color: rgba(255,255,255,0.4); font-size: 0.65rem; font-weight: 600;
       letter-spacing: 1.5px; text-transform: uppercase;
-      padding: 0.8rem 1.4rem 0.3rem;
+      padding: 0.7rem 1.4rem 0.2rem;
     }
     .sidebar-nav .nav-link {
-      color: rgba(255,255,255,0.75); padding: 0.65rem 1.4rem;
-      border-radius: 0; transition: all 0.2s;
-      display: flex; align-items: center; gap: 0.7rem; font-size: 0.88rem;
+      color: rgba(255,255,255,0.75); padding: 0.6rem 1.4rem;
+      border-radius: 0; transition: all 0.15s;
+      display: flex; align-items: center; gap: 0.7rem; font-size: 0.87rem;
     }
     .sidebar-nav .nav-link:hover,
     .sidebar-nav .nav-link.active {
@@ -49,55 +49,55 @@
       border-left: 3px solid var(--accent);
       padding-left: calc(1.4rem - 3px);
     }
-    .sidebar-nav .nav-link i { font-size: 1rem; width: 1.2rem; text-align: center; }
+    .sidebar-nav .nav-link i { font-size: 0.95rem; width: 1.2rem; text-align: center; }
     .sidebar-footer { padding: 1rem 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); }
     .user-chip { display: flex; align-items: center; gap: 0.6rem; }
     .user-avatar {
-      width: 36px; height: 36px; border-radius: 50%;
+      width: 34px; height: 34px; border-radius: 50%;
       background: var(--accent); color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+      font-weight: 700; font-size: 0.82rem; flex-shrink: 0;
     }
-    .user-info small { color: rgba(255,255,255,0.5); font-size: 0.7rem; display: block; }
-    .user-info span  { color: #fff; font-size: 0.85rem; font-weight: 500; }
+    .user-info small { color: rgba(255,255,255,0.5); font-size: 0.68rem; display: block; }
+    .user-info span  { color: #fff; font-size: 0.83rem; font-weight: 500; }
 
     #main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
     #main-content.no-sidebar { margin-left: 0; }
     .topbar {
       background: #fff; border-bottom: 1px solid #e2e8f0;
-      padding: 0.8rem 1.8rem;
+      padding: 0.75rem 1.8rem;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 50;
       box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
     .topbar-title { font-weight: 600; color: #1e293b; font-size: 1rem; }
-    .content-area { padding: 1.8rem; }
+    .content-area { padding: 1.6rem; }
 
     .card { border: none; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.07); }
     .card-header {
       background: #fff; border-bottom: 1px solid #f1f5f9;
       border-radius: 12px 12px 0 0 !important;
-      padding: 1rem 1.4rem; font-weight: 600; color: #1e293b;
+      padding: 0.9rem 1.2rem; font-weight: 600; color: #1e293b; font-size: 0.9rem;
     }
     .stat-card {
-      border-radius: 14px; padding: 1.4rem;
-      display: flex; align-items: center; gap: 1.2rem;
+      border-radius: 14px; padding: 1.2rem;
+      display: flex; align-items: center; gap: 1rem;
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
       border: none; transition: transform 0.2s;
     }
     .stat-card:hover { transform: translateY(-2px); }
     .stat-icon {
-      width: 54px; height: 54px; border-radius: 14px;
+      width: 50px; height: 50px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; flex-shrink: 0;
+      font-size: 1.4rem; flex-shrink: 0;
     }
-    .stat-label { font-size: 0.78rem; color: #64748b; font-weight: 500; }
-    .stat-value { font-size: 2rem; font-weight: 700; color: #1e293b; line-height: 1.1; }
+    .stat-label { font-size: 0.76rem; color: #64748b; font-weight: 500; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; color: #1e293b; line-height: 1.1; }
 
     .danger-badge {
       background: var(--danger-bg); border: 1px solid var(--danger-border);
-      color: #be123c; border-radius: 8px; padding: 0.2rem 0.6rem;
-      font-size: 0.75rem; font-weight: 600;
+      color: #be123c; border-radius: 6px; padding: 0.15rem 0.5rem;
+      font-size: 0.72rem; font-weight: 600;
     }
     .danger-row { background: #fff8f8 !important; }
     #keyword-alert {
@@ -106,25 +106,29 @@
       padding: 0.8rem 1rem; margin-top: 0.5rem;
     }
 
-    .table th { font-size: 0.78rem; color: #64748b; font-weight: 600; border-top: none; }
-    .table td { font-size: 0.87rem; vertical-align: middle; }
+    .table th { font-size: 0.76rem; color: #64748b; font-weight: 600; border-top: none; }
+    .table td { font-size: 0.85rem; vertical-align: middle; }
     .table-hover tbody tr:hover { background: #f8fafc; }
 
-    .form-label { font-weight: 500; font-size: 0.85rem; color: #374151; }
-    .form-control, .form-select { border-radius: 8px; font-size: 0.88rem; border-color: #d1d5db; }
+    .form-label { font-weight: 500; font-size: 0.84rem; color: #374151; }
+    .form-control, .form-select { border-radius: 8px; font-size: 0.87rem; border-color: #d1d5db; }
     .form-control:focus, .form-select:focus {
       border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
-
-    .btn { border-radius: 8px; font-weight: 500; font-size: 0.87rem; }
+    .btn { border-radius: 8px; font-weight: 500; font-size: 0.86rem; }
     .btn-primary { background: var(--primary-light); border-color: var(--primary-light); }
     .btn-primary:hover { background: var(--primary); border-color: var(--primary); }
 
-    .shift-badge { font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.55rem; border-radius: 6px; }
+    .shift-badge { font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 5px; }
     .shift-주간 { background: #fef3c7; color: #92400e; }
     .shift-야간 { background: #ede9fe; color: #5b21b6; }
     .shift-심야 { background: #1e293b; color: #e2e8f0; }
     .page-link { border-radius: 6px !important; }
+
+    /* 위험도 색상 강조 */
+    .risk-critical { background: #fff5f5; border-left: 4px solid #ef4444; }
+    .risk-high     { background: #fffbeb; border-left: 4px solid #f59e0b; }
+    .risk-medium   { background: #eff6ff; border-left: 4px solid #3b82f6; }
 
     @keyframes slideIn {
       from { transform: translateX(120%); opacity: 0; }
@@ -143,7 +147,7 @@
 {% if current_user.is_authenticated %}
 <nav id="sidebar">
   <div class="sidebar-brand">
-    <div class="d-flex align-items-center gap-2 mb-1">
+    <div class="d-flex align-items-center gap-2">
       <i class="bi bi-hospital text-info fs-4"></i>
       <div>
         <h5 class="mb-0">병동 인수인계</h5>
@@ -153,13 +157,33 @@
   </div>
 
   <div class="sidebar-nav">
-    <div class="nav-section-label">메인</div>
-    <a href="{{ url_for('main.dashboard') }}"
-       class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
-      <i class="bi bi-grid-1x2-fill"></i> 대시보드
+
+    <!-- ① 받은 인수인계함 (최상단 / 가장 중요) -->
+    <div class="nav-section-label">내 인수인계</div>
+    <a href="{{ url_for('inbox.index') }}"
+       class="nav-link {% if request.endpoint and request.endpoint == 'inbox.index' %}active{% endif %}">
+      <i class="bi bi-inbox-fill"></i>
+      받은 인수인계함
+      <span id="sidebarBadge" class="badge bg-danger ms-auto"
+            style="display:none;font-size:0.62rem;"></span>
+    </a>
+    <a href="{{ url_for('inbox.sent') }}"
+       class="nav-link {% if request.endpoint == 'inbox.sent' %}active{% endif %}">
+      <i class="bi bi-send-fill"></i> 보낸 인수인계함
+    </a>
+    <a href="{{ url_for('inbox.danger') }}"
+       class="nav-link {% if request.endpoint == 'inbox.danger' %}active{% endif %}">
+      <i class="bi bi-exclamation-octagon-fill text-danger"></i> 위험 인수인계
     </a>
 
-    <div class="nav-section-label mt-2">환자 관리</div>
+    <!-- ② 인수인계 작성 -->
+    <div class="nav-section-label mt-1">작업</div>
+    <a href="{{ url_for('handover.create') }}" class="nav-link">
+      <i class="bi bi-journal-plus"></i> 인수인계 작성
+    </a>
+
+    <!-- ③ 환자 관리 -->
+    <div class="nav-section-label mt-1">환자 관리</div>
     <a href="{{ url_for('patients.index') }}"
        class="nav-link {% if request.endpoint and 'patients' in request.endpoint %}active{% endif %}">
       <i class="bi bi-person-lines-fill"></i> 환자 목록
@@ -168,41 +192,48 @@
       <i class="bi bi-person-plus-fill"></i> 환자 등록
     </a>
 
-    <div class="nav-section-label mt-2">인수인계</div>
+    <!-- ④ 전체 인수인계 (admin/charge_nurse/doctor 우선, nurse도 접근 가능하나 병동 제한) -->
+    <div class="nav-section-label mt-1">전체 현황</div>
     <a href="{{ url_for('handover.index') }}"
        class="nav-link {% if request.endpoint == 'handover.index' %}active{% endif %}">
-      <i class="bi bi-journal-text"></i> 인수인계 목록
+      <i class="bi bi-journal-text"></i>
+      전체 인수인계
+      {% if current_user.role == 'nurse' %}
+      <span class="ms-auto" style="font-size:0.62rem;color:rgba(255,255,255,0.4);">내 병동</span>
+      {% endif %}
     </a>
-    <a href="{{ url_for('handover.create') }}" class="nav-link">
-      <i class="bi bi-journal-plus"></i> 인수인계 작성
-    </a>
-    <a href="{{ url_for('inbox.index') }}"
-       class="nav-link {% if request.endpoint and 'inbox' in request.endpoint %}active{% endif %}">
-      <i class="bi bi-inbox-fill"></i> 받은 인수인계함
-      <span id="sidebarBadge" class="badge bg-danger ms-auto" style="display:none;font-size:0.65rem;"></span>
-    </a>
-    <a href="{{ url_for('handover.index') }}?danger_only=1" class="nav-link">
-      <i class="bi bi-exclamation-triangle-fill text-warning"></i> 위험 알림
+    <a href="{{ url_for('main.dashboard') }}"
+       class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+      <i class="bi bi-grid-1x2-fill"></i> 대시보드
     </a>
 
+    <!-- ⑤ 관리자 전용 -->
     {% if current_user.role in ['admin', 'charge_nurse'] %}
-    <div class="nav-section-label mt-2">관리</div>
+    <div class="nav-section-label mt-1">관리</div>
     <a href="{{ url_for('audit.index') }}"
        class="nav-link {% if request.endpoint and 'audit' in request.endpoint %}active{% endif %}">
       <i class="bi bi-shield-check-fill"></i> 감사 로그
     </a>
     {% endif %}
+
   </div>
 
   <div class="sidebar-footer">
-    <div class="user-chip">
+    <div class="user-chip mb-2">
       <div class="user-avatar">{{ current_user.name[0] }}</div>
       <div class="user-info">
         <span>{{ current_user.name }}</span>
-        <small>{{ current_user.role }} · {{ current_user.ward or '병동 미지정' }}</small>
+        <small>
+          {% if current_user.role == 'nurse' %}간호사
+          {% elif current_user.role == 'charge_nurse' %}수간호사
+          {% elif current_user.role == 'doctor' %}의사
+          {% elif current_user.role == 'admin' %}관리자
+          {% else %}{{ current_user.role }}{% endif %}
+          · {{ current_user.ward or '병동 미지정' }}
+        </small>
       </div>
     </div>
-    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-light w-100 mt-2">
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-light w-100">
       <i class="bi bi-box-arrow-left me-1"></i> 로그아웃
     </a>
   </div>
@@ -218,7 +249,7 @@
         <i class="bi bi-clock me-1"></i>
         <span id="clock"></span>
       </span>
-      <button class="btn btn-sm position-relative" id="notifBtn"
+      <button class="btn btn-sm position-relative"
               onclick="location.href='{{ url_for('inbox.index') }}'"
               style="background:transparent;border:none;padding:4px 8px;">
         <i class="bi bi-bell-fill" style="font-size:1.1rem;color:#64748b;"></i>
@@ -262,12 +293,11 @@
 {% if current_user.is_authenticated %}
 <script>
 (function() {
-  const badge      = document.getElementById('notifBadge');
-  const sideBar    = document.getElementById('sidebarBadge');
-  let lastUnread   = 0;
-  let lastCritical = 0;
+  const badge   = document.getElementById('notifBadge');
+  const sideBar = document.getElementById('sidebarBadge');
+  let lastUnread = 0, lastCritical = 0;
 
-  function pollNotifications() {
+  function poll() {
     fetch('/api/v1/notifications/unread-count')
       .then(r => r.json())
       .then(data => {
@@ -284,67 +314,66 @@
           if (sideBar) sideBar.style.display = 'none';
         }
 
-        if (hasNew && count > lastUnread && data.latest) {
-          showToast(data.latest, critical > 0);
-        }
-        if (critical > lastCritical && critical > 0) {
-          showCriticalAlert(critical);
-        }
+        if (hasNew && count > lastUnread && data.latest) showToast(data.latest, critical > 0);
+        if (critical > lastCritical && critical > 0) blinkTitle(critical);
 
-        lastUnread   = count;
-        lastCritical = critical;
+        lastUnread = count; lastCritical = critical;
       })
       .catch(() => {});
   }
 
   function showToast(latest, isCritical) {
-    const existing = document.getElementById('handoverToast');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.id = 'handoverToast';
-    toast.style.cssText = `
+    const old = document.getElementById('handoverToast');
+    if (old) old.remove();
+    const t = document.createElement('div');
+    t.id = 'handoverToast';
+    t.style.cssText = `
       position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
-      background:${isCritical ? '#fef2f2' : '#f0fdf4'};
-      border:1px solid ${isCritical ? '#fecaca' : '#bbf7d0'};
+      background:${isCritical?'#fef2f2':'#f0fdf4'};
+      border:1px solid ${isCritical?'#fecaca':'#bbf7d0'};
       border-radius:12px;padding:1rem 1.2rem;width:280px;
-      box-shadow:0 4px 20px rgba(0,0,0,0.12);
-      animation:slideIn 0.3s ease;
+      box-shadow:0 4px 20px rgba(0,0,0,0.12);animation:slideIn 0.3s ease;
     `;
-    toast.innerHTML = `
+    t.innerHTML = `
       <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;">
         <i class="bi bi-bell-fill" style="color:${isCritical?'#dc2626':'#16a34a'};font-size:1.1rem;"></i>
-        <strong style="font-size:0.9rem;">새 인수인계 도착</strong>
+        <strong style="font-size:0.88rem;">새 인수인계 도착</strong>
         <button onclick="this.parentElement.parentElement.remove()"
                 style="margin-left:auto;background:none;border:none;font-size:1rem;cursor:pointer;color:#94a3b8;">×</button>
       </div>
-      <div style="font-size:0.82rem;color:#374151;">
+      <div style="font-size:0.8rem;color:#374151;">
         <strong>${latest.patient_name}</strong> 환자<br>
         <span style="color:#64748b;">${latest.from_user} · ${latest.created_at}</span>
-        ${isCritical ? '<br><span style="color:#dc2626;font-weight:600;">⚠️ CRITICAL 위험도</span>' : ''}
+        ${isCritical?'<br><span style="color:#dc2626;font-weight:600;">⚠️ CRITICAL 위험도</span>':''}
       </div>
-      <a href="/inbox/" style="display:block;margin-top:0.6rem;font-size:0.8rem;color:#2563eb;">
+      <a href="/inbox/" style="display:block;margin-top:0.5rem;font-size:0.8rem;color:#2563eb;">
         받은 인수인계함 보기 →
       </a>
     `;
-    document.body.appendChild(toast);
-    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 8000);
+    document.body.appendChild(t);
+    setTimeout(() => { if (t.parentNode) t.remove(); }, 8000);
   }
 
-  function showCriticalAlert(count) {
-    let blink = 0;
-    const original = document.title;
-    const interval = setInterval(() => {
-      document.title = blink % 2 === 0 ? `🚨 CRITICAL ${count}건 미확인!` : original;
-      blink++;
-      if (blink >= 6) { clearInterval(interval); document.title = original; }
+  function blinkTitle(count) {
+    let b = 0;
+    const orig = document.title;
+    const iv = setInterval(() => {
+      document.title = b++ % 2 === 0 ? `🚨 CRITICAL ${count}건 미확인!` : orig;
+      if (b >= 6) { clearInterval(iv); document.title = orig; }
     }, 800);
   }
 
-  pollNotifications();
-  setInterval(pollNotifications, 5000);
+  poll();
+  setInterval(poll, 5000);
 })();
 </script>
 {% endif %}
 
+<style>
+@keyframes slideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+</style>
 </body>
 </html>
