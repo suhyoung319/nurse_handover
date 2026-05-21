@@ -17,6 +17,7 @@ from app import db
 from app.models import Patient, Handover, RiskAssessment
 from app.services.audit_service import AuditService
 from app.middleware.rbac import require_permission
+from app.utils import apply_patient_scope, can_access_patient
 
 patients_bp = Blueprint('patients', __name__, url_prefix='/patients')
 
@@ -152,9 +153,8 @@ def index():
 
     q = Patient.query
 
-    # nurse: 자기 병동만
-    if current_user.role == 'nurse' and current_user.ward:
-        q = q.filter_by(ward=current_user.ward)
+    # nurse: 같은 상위 진료과 그룹만
+    q = apply_patient_scope(q, current_user)
 
     if search:
         q = q.filter(
@@ -273,6 +273,9 @@ def create():
 @login_required
 def detail(id):
     patient = Patient.query.get_or_404(id)
+    if not can_access_patient(current_user, patient):
+        flash('다른 진료과 환자 정보에 접근할 수 없습니다.', 'warning')
+        return redirect(url_for('patients.index'))
 
     AuditService.log_view('patient', id,
         description=f'환자 상세 조회: {patient.name}')
@@ -306,6 +309,9 @@ def detail(id):
 @require_permission('patient', 'write')
 def edit(id):
     patient = Patient.query.get_or_404(id)
+    if not can_access_patient(current_user, patient):
+        flash('다른 진료과 환자 정보에 접근할 수 없습니다.', 'warning')
+        return redirect(url_for('patients.index'))
 
     if request.method == 'POST':
         old_value = patient.to_dict()
@@ -349,6 +355,9 @@ def delete(id):
         return redirect(url_for('patients.detail', id=id))
 
     patient = Patient.query.get_or_404(id)
+    if not can_access_patient(current_user, patient):
+        flash('다른 진료과 환자 정보에 접근할 수 없습니다.', 'warning')
+        return redirect(url_for('patients.index'))
     name    = patient.name
 
     AuditService.log_delete('patient', id,

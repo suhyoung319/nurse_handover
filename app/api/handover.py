@@ -31,6 +31,7 @@ from app.models import Handover, Patient
 from app.services.audit_service import AuditService
 from app.services.risk_service import RiskService
 from app.middleware.rbac import require_permission
+from app.utils import apply_handover_patient_scope, can_access_patient
 
 api_handover_bp = Blueprint('api_handover', __name__, url_prefix='/api/v1/handovers')
 
@@ -84,10 +85,8 @@ def list_handovers():
     if patient_id:
         q = q.filter_by(patient_id=patient_id)
 
-    # 병동 필터 (admin이 아니면 자기 병동만)
-    if current_user.role not in ('admin', 'charge_nurse') and current_user.ward:
-        q = (q.join(Patient)
-               .filter(Patient.ward == current_user.ward))
+    # 환자 접근 필터 (nurse만 같은 상위 진료과로 제한)
+    q = apply_handover_patient_scope(q, current_user)
 
     paginated = q.order_by(Handover.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
@@ -112,6 +111,8 @@ def get_handover(id):
     민감 정보이므로 조회 시 Audit Log 기록.
     """
     handover = Handover.query.get_or_404(id)
+    if not can_access_patient(current_user, handover.patient):
+        return error_response('PERMISSION_DENIED', '다른 진료과 환자의 인수인계에 접근할 수 없습니다.', 403)
 
     # 감사 로그: 상세 조회
     AuditService.log_view(
@@ -168,6 +169,8 @@ def create_handover():
     patient = Patient.query.get(data['patient_id'])
     if not patient:
         return error_response('PATIENT_NOT_FOUND', '존재하지 않는 환자입니다.', 404)
+    if not can_access_patient(current_user, patient):
+        return error_response('PERMISSION_DENIED', '다른 진료과 환자에게 인수인계를 작성할 수 없습니다.', 403)
 
     handover = Handover(
         patient_id   = data['patient_id'],
@@ -206,6 +209,8 @@ def create_handover():
 def update_handover(id):
     """인수인계 수정. 작성자 본인 또는 관리자만 가능."""
     handover = Handover.query.get_or_404(id)
+    if not can_access_patient(current_user, handover.patient):
+        return error_response('PERMISSION_DENIED', '다른 진료과 환자의 인수인계에 접근할 수 없습니다.', 403)
 
     # 작성자 본인 또는 admin만 수정 가능
     if (handover.from_user_id != current_user.id and
@@ -251,6 +256,8 @@ def update_handover(id):
 def delete_handover(id):
     """인수인계 삭제. 삭제 전 내용을 감사 로그에 기록."""
     handover = Handover.query.get_or_404(id)
+    if not can_access_patient(current_user, handover.patient):
+        return error_response('PERMISSION_DENIED', '다른 진료과 환자의 인수인계에 접근할 수 없습니다.', 403)
 
     if (handover.from_user_id != current_user.id and
             current_user.role != 'admin'):
@@ -280,6 +287,8 @@ def acknowledge_handover(id):
     """
     from app.models import HandoverAck
     handover = Handover.query.get_or_404(id)
+    if not can_access_patient(current_user, handover.patient):
+        return error_response('PERMISSION_DENIED', '다른 진료과 환자의 인수인계에 접근할 수 없습니다.', 403)
 
     # 이미 확인했는지 체크
     existing = HandoverAck.query.filter_by(
@@ -327,6 +336,8 @@ def get_risk_detail(id):
     "왜 위험으로 판단됐는가" 를 확인할 수 있음.
     """
     handover = Handover.query.get_or_404(id)
+    if not can_access_patient(current_user, handover.patient):
+        return error_response('PERMISSION_DENIED', '다른 진료과 환자의 인수인계에 접근할 수 없습니다.', 403)
 
     # 분석 결과 없으면 실시간 분석
     if not handover.risk_assessment:

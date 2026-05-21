@@ -28,6 +28,7 @@ from functools import wraps
 from flask import abort, flash, redirect, url_for, request, jsonify
 from flask_login import current_user
 from app.services.audit_service import AuditService
+from app.utils import get_department_group
 
 
 def require_role(*roles):
@@ -113,12 +114,12 @@ def require_same_ward_or_admin(get_ward_func):
             if not current_user.is_authenticated:
                 return redirect(url_for('auth.login'))
 
-            if current_user.role == 'admin':
+            if current_user.role in ('admin', 'charge_nurse', 'doctor'):
                 return f(*args, **kwargs)
 
             try:
                 target_ward = get_ward_func()
-                if current_user.ward and current_user.ward != target_ward:
+                if get_department_group(current_user.ward) != get_department_group(target_ward):
                     flash('다른 병동의 데이터에 접근할 수 없습니다.', 'warning')
                     return redirect(url_for('main.dashboard'))
             except Exception:

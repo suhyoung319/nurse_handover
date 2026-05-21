@@ -2,7 +2,7 @@
 routes/handover.py
 
 변경사항:
-- 전체 인수인계 목록: nurse는 자기 병동만, admin/charge_nurse/doctor는 전체
+- 전체 인수인계 목록: nurse는 같은 상위 진료과만, admin/charge_nurse/doctor는 전체
 - 환자 삭제: admin/charge_nurse만 가능
 - 회원가입 role: 기본값 nurse (선택 UI 제거)
 """
@@ -16,6 +16,7 @@ from app.services.audit_service import AuditService
 from app.services.risk_service import RiskService
 from app.middleware.rbac import require_permission
 from app.services.risk_ai_service import predict_risk
+from app.utils import apply_handover_patient_scope, apply_patient_scope, can_access_patient
 
 handover_bp = Blueprint('handover', __name__, url_prefix='/handovers')
 
@@ -32,7 +33,7 @@ RISK_COLOR = {
 def index():
     """
     전체 인수인계 목록.
-    - nurse: 자기 병동 환자 관련 인수인계만 조회
+    - nurse: 같은 상위 진료과 환자 관련 인수인계만 조회
     - charge_nurse / doctor / admin: 전체 조회
     """
     page        = request.args.get('page', 1, type=int)
@@ -43,18 +44,8 @@ def index():
 
     q = Handover.query
 
-    # ── 병동 접근 제한 ───────────────────────────────────────
-    if current_user.role == 'nurse':
-        # nurse는 자기 병동 환자 인수인계만
-        if current_user.ward:
-            q = (q.join(Patient, Handover.patient_id == Patient.id)
-                   .filter(Patient.ward == current_user.ward))
-        else:
-            # 병동 미지정 nurse는 본인 관련만
-            q = q.filter(
-                (Handover.from_user_id == current_user.id) |
-                (Handover.to_user_id   == current_user.id)
-            )
+    # ── 환자 접근 제한 ───────────────────────────────────────
+    q = apply_handover_patient_scope(q, current_user)
 
     # ── 필터 ─────────────────────────────────────────────────
     if shift:
@@ -92,11 +83,18 @@ def index():
 @login_required
 @require_permission('handover', 'write')
 def create(patient_id=None):
-    patients = Patient.query.filter_by(status='입원중').order_by(Patient.name).all()
+    patients = (apply_patient_scope(Patient.query.filter_by(status='입원중'), current_user)
+                .order_by(Patient.name).all())
     users    = User.query.filter(
         User.id != current_user.id,
         User.is_active == True
     ).order_by(User.name).all()
+
+    if patient_id:
+        selected_patient = Patient.query.get_or_404(patient_id)
+        if not can_access_patient(current_user, selected_patient):
+            flash('다른 진료과 환자에게 인수인계를 작성할 수 없습니다.', 'warning')
+            return redirect(url_for('handover.create'))
 
     if request.method == 'POST':
         pid     = request.form.get('patient_id', type=int)
@@ -104,6 +102,13 @@ def create(patient_id=None):
 
         if not pid or not content:
             flash('환자와 인수인계 내용은 필수입니다.', 'danger')
+            return render_template('handover/form.html',
+                handover=None, patients=patients,
+                users=users, selected_patient_id=patient_id)
+
+        patient = Patient.query.get(pid)
+        if not can_access_patient(current_user, patient):
+            flash('다른 진료과 환자에게 인수인계를 작성할 수 없습니다.', 'danger')
             return render_template('handover/form.html',
                 handover=None, patients=patients,
                 users=users, selected_patient_id=patient_id)
@@ -126,7 +131,6 @@ def create(patient_id=None):
         handover.risk_score = risk_result.get("confidence", 0.0)
 
         assessment = RiskService.analyze_and_save(handover)
-        patient    = Patient.query.get(pid)
 
         AuditService.log_create(
             resource='handover',
@@ -158,6 +162,9 @@ def create(patient_id=None):
 @login_required
 def detail(id):
     handover = Handover.query.get_or_404(id)
+    if not can_access_patient(current_user, handover.patient):
+        flash('다른 진료과 환자의 인수인계에 접근할 수 없습니다.', 'warning')
+        return redirect(url_for('handover.index'))
 
     AuditService.log_view(
         resource='handover',
@@ -184,6 +191,9 @@ def detail(id):
 @require_permission('handover', 'write')
 def edit(id):
     handover = Handover.query.get_or_404(id)
+    if not can_access_patient(current_user, handover.patient):
+        flash('다른 진료과 환자의 인수인계에 접근할 수 없습니다.', 'warning')
+        return redirect(url_for('handover.index'))
 
     if (handover.from_user_id != current_user.id and
             current_user.role not in ('admin', 'charge_nurse')):
@@ -194,11 +204,18 @@ def edit(id):
         flash('이미 확인된 인수인계는 수정할 수 없습니다.', 'warning')
         return redirect(url_for('handover.detail', id=id))
 
-    patients = Patient.query.filter_by(status='입원중').all()
+    patients = (apply_patient_scope(Patient.query.filter_by(status='입원중'), current_user)
+                .order_by(Patient.name).all())
     users    = User.query.filter(User.id != current_user.id).all()
 
     if request.method == 'POST':
         old_value = handover.to_dict()
+        new_patient = Patient.query.get(request.form.get('patient_id', type=int))
+        if not can_access_patient(current_user, new_patient):
+            flash('다른 진료과 환자로 인수인계를 수정할 수 없습니다.', 'danger')
+            return render_template('handover/form.html',
+                handover=handover, patients=patients,
+                users=users, selected_patient_id=None)
 
         handover.patient_id  = request.form.get('patient_id', type=int)
         handover.to_user_id  = request.form.get('to_user_id', type=int)
@@ -236,6 +253,9 @@ def edit(id):
 @require_permission('handover', 'delete')
 def delete(id):
     handover = Handover.query.get_or_404(id)
+    if not can_access_patient(current_user, handover.patient):
+        flash('다른 진료과 환자의 인수인계에 접근할 수 없습니다.', 'warning')
+        return redirect(url_for('handover.index'))
 
     if (handover.from_user_id != current_user.id and
             current_user.role != 'admin'):
