@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% block title %}받은 인수인계함{% endblock %}
+{% block page_title %}<i class="bi bi-inbox-fill me-2 text-primary"></i>받은 인수인계함{% endblock %}
+
+{% block content %}
+
+{# ── 상단 요약 카드 ── #}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card card" style="background:#eff6ff;">
+      <div class="stat-icon" style="background:#dbeafe;">
+        <i class="bi bi-envelope-fill text-primary"></i>
+      </div>
+      <div>
+        <div class="stat-label">미확인</div>
+        <div class="stat-value text-primary">{{ unread_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card card" style="background:#fff1f2;">
+      <div class="stat-icon" style="background:#fecdd3;">
+        <i class="bi bi-exclamation-octagon-fill text-danger"></i>
+      </div>
+      <div>
+        <div class="stat-label">긴급(CRITICAL)</div>
+        <div class="stat-value text-danger">{{ critical_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card card" style="background:#fffbeb;">
+      <div class="stat-icon" style="background:#fef3c7;">
+        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+      </div>
+      <div>
+        <div class="stat-label">높음(HIGH)</div>
+        <div class="stat-value text-warning">{{ high_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="d-flex gap-2 h-100">
+      <a href="{{ url_for('handover.create') }}" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center gap-1">
+        <i class="bi bi-journal-plus"></i> 인수인계 작성
+      </a>
+    </div>
+  </div>
+</div>
+
+{# ── 탭 ── #}
+<ul class="nav nav-tabs mb-0" id="inboxTab" style="border-bottom:none;">
+  <li class="nav-item">
+    <a class="nav-link {% if tab != 'acked' %}active{% endif %}"
+       href="{{ url_for('inbox.index') }}?tab=pending">
+      미확인
+      {% if unread_count > 0 %}
+      <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+      {% endif %}
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if tab == 'acked' %}active{% endif %}"
+       href="{{ url_for('inbox.index') }}?tab=acked">
+      확인 완료
+    </a>
+  </li>
+</ul>
+
+{# ── 미확인 탭 ── #}
+{% if tab != 'acked' %}
+<div class="card" style="border-radius:0 12px 12px 12px;">
+  <div class="card-body p-0">
+    {% if pending_list %}
+      {% for h in pending_list %}
+      {% set lv = h.risk_assessment.risk_level if h.risk_assessment else 'LOW' %}
+      {% set lv_color = RISK_COLOR.get(lv, 'secondary') %}
+      <div class="p-3 border-bottom {% if lv == 'CRITICAL' %}border-start border-danger border-4{% elif lv == 'HIGH' %}border-start border-warning border-4{% endif %}"
+           style="{% if lv == 'CRITICAL' %}background:#fff5f5;{% elif lv == 'HIGH' %}background:#fffbeb;{% endif %}">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-{{ lv_color }}">규칙 {{ lv }}</span>
+            <span class="badge bg-secondary-subtle text-secondary border">AI {{ h.risk_level or 'UNKNOWN' }} / {{ '%.2f'|format(h.risk_score or 0) }}</span>
+            <strong>{{ h.patient.name }}</strong>
+            <span class="text-muted small">{{ h.patient.ward }}</span>
+            <span class="shift-badge shift-{{ h.shift }}">{{ h.shift }}</span>
+          </div>
+          <span class="text-muted small">
+            <i class="bi bi-person me-1"></i>{{ h.from_user.name }} ·
+            {{ h.created_at.strftime('%m/%d %H:%M') }}
+          </span>
+        </div>
+
+        <p class="mb-2 small" style="color:#374151;">
+          {{ h.content[:200] }}{% if h.content|length > 200 %}…{% endif %}
+        </p>
+
+        {% if h.danger_keywords %}
+        <div class="mb-2">
+          {% for kw in h.danger_keywords.split(', ') %}
+          <span class="danger-badge me-1">{{ kw }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {# 확인 폼 (메모 포함) #}
+        <div class="d-flex gap-2 align-items-start flex-wrap">
+          <form method="POST" action="{{ url_for('inbox.acknowledge', id=h.id) }}"
+                class="d-flex gap-2 align-items-center flex-wrap">
+            <input type="text" name="note" class="form-control form-control-sm"
+                   placeholder="확인 메모 (선택) 예: 의사 보고 완료"
+                   style="width:260px;">
+            <button type="submit" class="btn btn-sm btn-success">
+              <i class="bi bi-check-circle me-1"></i>확인 완료
+            </button>
+          </form>
+
+          <a href="{{ url_for('handover.detail', id=h.id) }}"
+             class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-eye me-1"></i>상세
+          </a>
+
+          {% if h.from_user_id == current_user.id or current_user.role in ['admin', 'charge_nurse'] %}
+          <a href="{{ url_for('inbox.transfer', id=h.id) }}"
+             class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left-right me-1"></i>대상 변경
+          </a>
+
+          <button type="button" class="btn btn-sm btn-outline-danger"
+                  data-bs-toggle="modal" data-bs-target="#cancelModal{{ h.id }}">
+            <i class="bi bi-x-circle me-1"></i>취소
+          </button>
+          {% endif %}
+        </div>
+      </div>
+
+      {# 취소 모달 #}
+      <div class="modal fade" id="cancelModal{{ h.id }}" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header py-2">
+              <h6 class="modal-title">인수인계 취소</h6>
+              <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('inbox.cancel', id=h.id) }}">
+              <div class="modal-body">
+                <p class="small text-muted mb-2">{{ h.patient.name }} 인수인계를 취소합니다.</p>
+                <input type="text" name="reason" class="form-control form-control-sm"
+                       placeholder="취소 사유 (선택)">
+              </div>
+              <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <button type="submit" class="btn btn-sm btn-danger">취소 확인</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-check2-all fs-2 text-success d-block mb-2"></i>
+      미확인 인수인계가 없습니다.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# ── 확인 완료 탭 ── #}
+{% else %}
+<div class="card" style="border-radius:0 12px 12px 12px;">
+  <div class="card-body p-0">
+    {% if acked_list %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">환자</th>
+            <th>규칙 위험도</th>
+            <th>AI 위험도</th>
+            <th>교대</th>
+            <th>인수자</th>
+            <th>확인 시각</th>
+            <th>확인 메모</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in acked_list %}
+          {% set lv = h.risk_assessment.risk_level if h.risk_assessment else 'LOW' %}
+          {% set lv_color = RISK_COLOR.get(lv, 'secondary') %}
+          <tr>
+            <td class="ps-3 fw-500">{{ h.patient.name }}
+              <div class="text-muted small">{{ h.patient.ward }}</div>
+            </td>
+            <td><span class="badge bg-{{ lv_color }}-subtle text-{{ lv_color }}">{{ lv }}</span></td>
+            <td><span class="badge bg-secondary-subtle text-secondary border">{{ h.risk_level or 'UNKNOWN' }} / {{ '%.2f'|format(h.risk_score or 0) }}</span></td>
+            <td><span class="shift-badge shift-{{ h.shift }}">{{ h.shift }}</span></td>
+            <td class="small text-muted">{{ h.from_user.name }}</td>
+            <td class="small text-muted">
+              {{ h.confirmed_at.strftime('%m/%d %H:%M') if h.confirmed_at else '-' }}
+            </td>
+            <td class="small text-muted">
+              {% set ack = h.acknowledgements|selectattr('user_id', 'equalto', current_user.id)|first %}
+              {% if ack and ack.note %}{{ ack.note }}{% else %}-{% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('handover.detail', id=h.id) }}"
+                 class="btn btn-xs btn-outline-secondary"
+                 style="padding:2px 8px;font-size:0.75rem;">상세</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-inbox fs-2 d-block mb-2"></i>확인 완료 목록이 없습니다.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

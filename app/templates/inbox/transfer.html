@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}인수인계 대상 변경{% endblock %}
+{% block page_title %}<i class="bi bi-arrow-left-right me-2 text-primary"></i>인수인계 대상 변경{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card mb-3">
+      <div class="card-header">현재 인수인계 정보</div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0" style="font-size:0.85rem;">
+          <tr><th class="text-muted" style="width:80px;">환자</th>
+              <td class="fw-500">{{ handover.patient.name }}
+                <span class="text-muted small ms-1">{{ handover.patient.ward }}</span></td></tr>
+          <tr><th class="text-muted">인수자</th><td>{{ handover.from_user.name }}</td></tr>
+          <tr><th class="text-muted">현재 수신자</th>
+              <td>{{ handover.to_user.name if handover.to_user else '미지정' }}</td></tr>
+          <tr><th class="text-muted">교대</th>
+              <td><span class="shift-badge shift-{{ handover.shift }}">{{ handover.shift }}</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">새 수신자 선택</div>
+      <div class="card-body">
+        <div class="alert alert-info py-2 small mb-3">
+          <i class="bi bi-info-circle me-1"></i>
+          대상 변경 후 새 수신자에게 미확인 상태로 재전달됩니다.
+          기존 확인 여부는 초기화됩니다.
+        </div>
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">새 수신자 <span class="text-danger">*</span></label>
+            <select name="new_to_user_id" class="form-select" required>
+              <option value="">선택하세요</option>
+              {% for u in users %}
+              {% if u.id != handover.to_user_id %}
+              <option value="{{ u.id }}">
+                {{ u.name }} ({{ u.role }}) — {{ u.ward or '병동 미지정' }}
+              </option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">변경 사유 (선택)</label>
+            <textarea name="note" class="form-control" rows="2"
+                      placeholder="예: 담당 간호사 교체, 야간 근무자 변경"></textarea>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg me-1"></i>대상 변경
+            </button>
+            <a href="{{ url_for('inbox.sent') }}" class="btn btn-outline-secondary">취소</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

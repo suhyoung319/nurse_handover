@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}위험 인수인계{% endblock %}
+{% block page_title %}<i class="bi bi-shield-exclamation me-2 text-danger"></i>위험 인수인계{% endblock %}
+
+{% block content %}
+
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <a href="{{ url_for('inbox.danger') }}"
+     class="btn btn-sm {% if not level %}btn-danger{% else %}btn-outline-danger{% endif %}">전체</a>
+  <a href="{{ url_for('inbox.danger') }}?level=CRITICAL"
+     class="btn btn-sm {% if level == 'CRITICAL' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+    🚨 CRITICAL
+  </a>
+  <a href="{{ url_for('inbox.danger') }}?level=HIGH"
+     class="btn btn-sm {% if level == 'HIGH' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+    ⚠️ HIGH
+  </a>
+  <a href="{{ url_for('inbox.danger') }}?level=MEDIUM"
+     class="btn btn-sm {% if level == 'MEDIUM' %}btn-info{% else %}btn-outline-info{% endif %}">
+    ℹ️ MEDIUM
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header">전체 <strong>{{ handovers.total }}</strong>건</div>
+  <div class="card-body p-0">
+    {% if handovers.items %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">위험도</th>
+            <th>환자</th>
+            <th>병동</th>
+            <th>위험 키워드</th>
+            <th>교대</th>
+            <th>작성자</th>
+            <th>수신자</th>
+            <th>확인</th>
+            <th>작성일</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in handovers.items %}
+          {% set lv = h.risk_assessment.risk_level if h.risk_assessment else 'MEDIUM' %}
+          {% set lv_color = RISK_COLOR.get(lv, 'secondary') %}
+          <tr class="{% if lv == 'CRITICAL' %}table-danger{% elif lv == 'HIGH' %}table-warning{% endif %}">
+            <td class="ps-3">
+              <span class="badge bg-{{ lv_color }}">{{ lv }}</span>
+              {% if h.risk_assessment %}
+              <div class="text-muted" style="font-size:0.7rem;">{{ h.risk_assessment.risk_score }}점</div>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('patients.detail', id=h.patient.id) }}"
+                 class="fw-500 text-decoration-none">{{ h.patient.name }}</a>
+            </td>
+            <td class="small text-muted">{{ h.patient.ward }}</td>
+            <td>
+              {% if h.danger_keywords %}
+              {% for kw in h.danger_keywords.split(', ')[:3] %}
+              <span class="danger-badge me-1">{{ kw }}</span>
+              {% endfor %}
+              {% if h.danger_keywords.split(', ')|length > 3 %}
+              <span class="text-muted small">+{{ h.danger_keywords.split(', ')|length - 3 }}</span>
+              {% endif %}
+              {% endif %}
+            </td>
+            <td><span class="shift-badge shift-{{ h.shift }}">{{ h.shift }}</span></td>
+            <td class="small">{{ h.from_user.name }}</td>
+            <td class="small">{{ h.to_user.name if h.to_user else '-' }}</td>
+            <td>
+              {% if h.is_confirmed %}
+              <span class="badge bg-success-subtle text-success">확인</span>
+              {% else %}
+              <span class="badge bg-warning-subtle text-warning">미확인</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">{{ h.created_at.strftime('%m/%d %H:%M') }}</td>
+            <td>
+              <a href="{{ url_for('handover.detail', id=h.id) }}"
+                 class="btn btn-xs btn-outline-secondary"
+                 style="padding:2px 8px;font-size:0.75rem;">상세</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if handovers.pages > 1 %}
+    <div class="d-flex justify-content-center py-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if handovers.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ handovers.prev_num }}&level={{ level }}">이전</a>
+          </li>
+          {% endif %}
+          {% for p in handovers.iter_pages() %}
+            {% if p %}
+            <li class="page-item {% if p == handovers.page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}&level={{ level }}">{{ p }}</a>
+            </li>
+            {% endif %}
+          {% endfor %}
+          {% if handovers.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ handovers.next_num }}&level={{ level }}">다음</a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-shield-check fs-2 text-success d-block mb-2"></i>
+      위험 인수인계가 없습니다.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,4 @@
+status와 is_confirmed를 둘 다 쓰고 있어 상태 불일치가 생긴다. 하나를 기준으로 통일하는 게 좋다. 실무적으로는 status를 기준으로 하고 is_confirmed는 제거하거나 보조값으로만 써야 한다.
+HandoverWorkflowService에 이미 확인 처리 로직이 잘 만들어져 있는데 실제 웹 라우트에서는 직접 처리하고 있다. 그래서 같은 기능이 여러 곳에 중복되어 버그가 난다. inbox.py, api/handover.py 모두 서비스 메서드를 호출하게 바꾸는 게 좋다.
+취소 처리도 status='CANCELLED'로 바꾸지 않고 to_user_id=None만 처리한다. 나중에 목록/통계/알림에서 꼬일 가능성이 크다.
+대상 변경도 기존 인수인계를 TRANSFERRED 처리하지 않고 같은 row의 수신자만 바꾼다. 이력 추적 관점에서는 약하다.
