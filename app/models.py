@@ -157,6 +157,8 @@ class Handover(db.Model):
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at      = db.Column(db.DateTime, default=datetime.utcnow,
                                onupdate=datetime.utcnow)
+    risk_level = db.Column(db.String(20), default='UNKNOWN')
+    risk_score = db.Column(db.Float, default=0.0)
 
     # Relationships
     risk_assessment  = db.relationship('RiskAssessment', backref='handover',

@@ -24,6 +24,13 @@ patients_bp = Blueprint('patients', __name__, url_prefix='/patients')
 # ── 위험도 레벨 정렬 가중치 ─────────────────────────────────────
 RISK_ORDER = {'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3, None: 4}
 
+RISK_COLOR = {
+    'CRITICAL': 'danger',
+    'HIGH':     'warning',
+    'MEDIUM':   'info',
+    'LOW':      'success',
+}
+
 RISK_CONFIG = {
     'CRITICAL': {
         'color':    'danger',
@@ -289,6 +296,7 @@ def detail(id):
         recent_24h=recent_24h,
         history=history,
         summary=summary,
+        RISK_COLOR=RISK_COLOR,
         RISK_CONFIG=RISK_CONFIG,
         can_delete=(current_user.role in ('admin', 'charge_nurse')))
 

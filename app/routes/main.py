@@ -33,6 +33,28 @@ def dashboard():
     today_start = datetime.combine(today, datetime.min.time())
     today_handovers = Handover.query.filter(Handover.created_at >= today_start).count()
 
+    # AI 위험도 통계
+    ai_high_count = Handover.query.filter(
+        Handover.risk_level.in_(['CRITICAL', 'HIGH'])
+    ).count()
+
+    today_ai_high_count = Handover.query.filter(
+        Handover.created_at >= today_start,
+        Handover.risk_level.in_(['CRITICAL', 'HIGH'])
+    ).count()
+
+    ai_analyzed_count = Handover.query.filter(
+        Handover.risk_level.isnot(None),
+        Handover.risk_level != 'UNKNOWN'
+    ).count()
+
+    ai_avg_confidence = db.session.query(
+        func.avg(Handover.risk_score)
+    ).filter(
+        Handover.risk_level.isnot(None),
+        Handover.risk_level != 'UNKNOWN'
+    ).scalar() or 0
+
     # 미확인 인수인계 (내가 받은 것 중 미확인)
     my_unread = Handover.query.filter_by(
         to_user_id=current_user.id,
@@ -54,6 +76,10 @@ def dashboard():
         danger_handovers=danger_handovers,
         today_handovers=today_handovers,
         my_unread=my_unread,
+        ai_high_count=ai_high_count,
+        today_ai_high_count=today_ai_high_count,
+        ai_analyzed_count=ai_analyzed_count,
+        ai_avg_confidence=ai_avg_confidence,
         recent_handovers=recent_handovers,
         danger_list=danger_list,
     )

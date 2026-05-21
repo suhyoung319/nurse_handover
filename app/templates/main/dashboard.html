@@ -43,6 +43,37 @@
   </div>
 </div>
 
+<!-- AI Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-4">
+    <div class="stat-card card" style="background:#eef2ff;">
+      <div class="stat-icon" style="background:#e0e7ff;"><i class="bi bi-cpu-fill text-primary"></i></div>
+      <div>
+        <div class="stat-label">AI 고위험 전체</div>
+        <div class="stat-value text-primary">{{ ai_high_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-4">
+    <div class="stat-card card" style="background:#fff1f2;">
+      <div class="stat-icon" style="background:#fecdd3;"><i class="bi bi-robot text-danger"></i></div>
+      <div>
+        <div class="stat-label">오늘 AI 고위험</div>
+        <div class="stat-value text-danger">{{ today_ai_high_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-xl-4">
+    <div class="stat-card card" style="background:#f8fafc;">
+      <div class="stat-icon" style="background:#e2e8f0;"><i class="bi bi-graph-up-arrow text-secondary"></i></div>
+      <div>
+        <div class="stat-label">AI 분석 / 평균 신뢰도</div>
+        <div class="stat-value">{{ ai_analyzed_count }}건 / {{ "%.2f"|format(ai_avg_confidence) }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row g-4">
   <!-- Recent handovers -->
   <div class="col-lg-7">
@@ -61,6 +92,7 @@
                 <th>교대</th>
                 <th>작성자</th>
                 <th>내용</th>
+                <th>AI</th>
                 <th>시간</th>
               </tr>
             </thead>
@@ -76,6 +108,13 @@
                 <td><span class="shift-badge shift-{{ h.shift }}">{{ h.shift }}</span></td>
                 <td class="text-muted">{{ h.from_user.name }}</td>
                 <td class="text-truncate" style="max-width:150px;">{{ h.content }}</td>
+                <td>
+                  {% if h.risk_level and h.risk_level != 'UNKNOWN' %}
+                  <span class="badge bg-secondary-subtle text-secondary">{{ h.risk_level }} / {{ "%.2f"|format(h.risk_score or 0) }}</span>
+                  {% else %}
+                  <span class="text-muted small">-</span>
+                  {% endif %}
+                </td>
                 <td class="text-muted small">{{ h.created_at.strftime('%m/%d %H:%M') }}</td>
               </tr>
               {% endfor %}

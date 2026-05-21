@@ -15,6 +15,7 @@ from app.models import Handover, Patient, User, HandoverAck, RiskAssessment
 from app.services.audit_service import AuditService
 from app.services.risk_service import RiskService
 from app.middleware.rbac import require_permission
+from app.services.risk_ai_service import predict_risk
 
 handover_bp = Blueprint('handover', __name__, url_prefix='/handovers')
 
@@ -120,6 +121,10 @@ def create(patient_id=None):
         db.session.add(handover)
         db.session.flush()
 
+        risk_result = predict_risk(content)
+        handover.risk_level = risk_result.get("risk_level", "UNKNOWN")
+        handover.risk_score = risk_result.get("confidence", 0.0)
+
         assessment = RiskService.analyze_and_save(handover)
         patient    = Patient.query.get(pid)
 
@@ -203,6 +208,10 @@ def edit(id):
         handover.medications = request.form.get('medications', '').strip()
         handover.procedures  = request.form.get('procedures',  '').strip()
         handover.updated_at  = datetime.utcnow()
+
+        risk_result = predict_risk(handover.content)
+        handover.risk_level = risk_result.get("risk_level", "UNKNOWN")
+        handover.risk_score = risk_result.get("confidence", 0.0)
 
         assessment = RiskService.analyze_and_save(handover)
         AuditService.log_update(
