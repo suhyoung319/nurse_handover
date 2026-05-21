@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}감사 로그{% endblock %}
+{% block page_title %}<i class="bi bi-shield-check me-2 text-primary"></i>감사 로그{% endblock %}
+
+{% block content %}
+<!-- 필터 -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label mb-1 small fw-500">행위 유형</label>
+        <select name="action" class="form-select form-select-sm">
+          <option value="">전체</option>
+          {% for a in ['CREATE','READ','UPDATE','DELETE','LOGIN','LOGIN_FAILED','LOGOUT','ACCESS_DENIED','ACKNOWLEDGE'] %}
+          <option value="{{ a }}" {% if action==a %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1 small fw-500">리소스</label>
+        <select name="resource" class="form-select form-select-sm">
+          <option value="">전체</option>
+          {% for r in ['handover','patient','user','auth'] %}
+          <option value="{{ r }}" {% if resource==r %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1 small fw-500">사용자</label>
+        <select name="user_id" class="form-select form-select-sm">
+          <option value="">전체</option>
+          {% for u in users %}
+          <option value="{{ u.id }}" {% if user_id==u.id %}selected{% endif %}>{{ u.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i>필터</button>
+        <a href="{{ url_for('audit.index') }}" class="btn btn-sm btn-outline-secondary">초기화</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    전체 <strong>{{ logs.total }}</strong>건
+    <span class="text-muted small ms-2">— 감사 로그는 삭제되지 않습니다</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" style="font-size:0.82rem;">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">시각</th>
+            <th>행위자</th>
+            <th>행위</th>
+            <th>리소스</th>
+            <th>ID</th>
+            <th>설명</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs.items %}
+          <tr>
+            <td class="ps-3 text-muted">{{ log.created_at.strftime('%m/%d %H:%M:%S') }}</td>
+            <td>{{ log.actor.name if log.actor else '시스템' }}</td>
+            <td>
+              {% set badge_map = {
+                'CREATE':'success','READ':'info','UPDATE':'warning',
+                'DELETE':'danger','LOGIN':'primary','LOGIN_FAILED':'danger',
+                'LOGOUT':'secondary','ACCESS_DENIED':'danger','ACKNOWLEDGE':'success'
+              } %}
+              <span class="badge bg-{{ badge_map.get(log.action, 'secondary') }}-subtle
+                           text-{{ badge_map.get(log.action, 'secondary') }}">
+                {{ log.action }}
+              </span>
+            </td>
+            <td class="text-muted">{{ log.resource }}</td>
+            <td class="text-muted">{{ log.resource_id or '-' }}</td>
+            <td class="text-truncate" style="max-width:250px;">{{ log.description or '-' }}</td>
+            <td class="text-muted">{{ log.ip_address or '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if logs.pages > 1 %}
+    <div class="d-flex justify-content-center py-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if logs.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ logs.prev_num }}&action={{ action }}&resource={{ resource }}&user_id={{ user_id or '' }}">이전</a>
+          </li>
+          {% endif %}
+          {% for p in logs.iter_pages() %}
+            {% if p %}
+            <li class="page-item {% if p == logs.page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}&action={{ action }}&resource={{ resource }}&user_id={{ user_id or '' }}">{{ p }}</a>
+            </li>
+            {% endif %}
+          {% endfor %}
+          {% if logs.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ logs.next_num }}&action={{ action }}&resource={{ resource }}&user_id={{ user_id or '' }}">다음</a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
