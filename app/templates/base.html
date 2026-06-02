@@ -203,9 +203,24 @@
     <a href="{{ url_for('handover.create') }}" class="nav-link">
       <i class="bi bi-journal-plus"></i> 인수인계 작성
     </a>
-    <a href="{{ url_for('handover.index') }}?danger_only=1" class="nav-link">
+    <a href="{{ url_for('inbox.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('inbox.') and request.endpoint != 'inbox.sent' and request.endpoint != 'inbox.danger' %}active{% endif %}">
+      <i class="bi bi-inbox-fill"></i>
+      받은 인수인계함
+      <span id="sidebar-unread-badge" class="badge bg-danger ms-auto d-none">0</span>
+    </a>
+    <a href="{{ url_for('inbox.sent') }}" class="nav-link {% if request.endpoint == 'inbox.sent' %}active{% endif %}">
+      <i class="bi bi-send-fill"></i> 보낸 인수인계함
+    </a>
+    <a href="{{ url_for('inbox.danger') }}" class="nav-link {% if request.endpoint == 'inbox.danger' %}active{% endif %}">
       <i class="bi bi-exclamation-triangle-fill text-warning"></i> 위험 알림
     </a>
+
+    {% if current_user.role in ['admin', 'charge_nurse'] %}
+    <div class="nav-section-label mt-2">관리</div>
+    <a href="{{ url_for('audit.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('audit.') %}active{% endif %}">
+      <i class="bi bi-shield-check"></i> 감사 로그
+    </a>
+    {% endif %}
   </div>
 
   <div class="sidebar-footer">
@@ -227,6 +242,10 @@
   <div class="topbar">
     <span class="topbar-title">{% block page_title %}{% endblock %}</span>
     <div class="d-flex align-items-center gap-2">
+      <a href="{{ url_for('inbox.index') }}" class="btn btn-sm btn-outline-secondary position-relative">
+        <i class="bi bi-bell"></i>
+        <span id="topbar-unread-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+      </a>
       <span class="badge bg-primary-subtle text-primary fw-normal">
         <i class="bi bi-clock me-1"></i>
         <span id="clock"></span>
@@ -277,6 +296,31 @@
     if (el) el.textContent = new Date().toLocaleTimeString('ko-KR');
   }
   updateClock(); setInterval(updateClock, 1000);
+
+  // Unread handover polling
+  async function updateUnreadBadge() {
+    const sidebarBadge = document.getElementById('sidebar-unread-badge');
+    const topbarBadge = document.getElementById('topbar-unread-badge');
+    if (!sidebarBadge || !topbarBadge) return;
+
+    try {
+      const response = await fetch('{{ url_for("api_notifications.unread_count") }}', {
+        headers: {'Accept': 'application/json'}
+      });
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const count = Number(data.unread_count || 0);
+      [sidebarBadge, topbarBadge].forEach((badge) => {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.classList.toggle('d-none', count <= 0);
+      });
+    } catch (error) {
+      // Polling failure should not interrupt the page.
+    }
+  }
+  updateUnreadBadge();
+  setInterval(updateUnreadBadge, 5000);
 </script>
 {% block extra_js %}{% endblock %}
 </body>

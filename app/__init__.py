@@ -23,11 +23,17 @@ def create_app():
     from app.routes.main     import main_bp
     from app.routes.patients import patients_bp
     from app.routes.handover import handover_bp
+    from app.routes.inbox    import inbox_bp
+    from app.routes.audit    import audit_bp
+    from app.api.notifications import api_notifications_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(patients_bp)
     app.register_blueprint(handover_bp)
+    app.register_blueprint(inbox_bp)
+    app.register_blueprint(audit_bp)
+    app.register_blueprint(api_notifications_bp)
 
     # 테이블 자동 생성 (MySQL DB가 이미 존재해야 함)
     with app.app_context():
