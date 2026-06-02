@@ -25,6 +25,8 @@ def create_app():
     from app.routes.handover import handover_bp
     from app.routes.inbox    import inbox_bp
     from app.routes.audit    import audit_bp
+    from app.api.handover    import api_handover_bp
+    from app.api.stats       import api_stats_bp
     from app.api.notifications import api_notifications_bp
 
     app.register_blueprint(auth_bp)
@@ -33,6 +35,8 @@ def create_app():
     app.register_blueprint(handover_bp)
     app.register_blueprint(inbox_bp)
     app.register_blueprint(audit_bp)
+    app.register_blueprint(api_handover_bp)
+    app.register_blueprint(api_stats_bp)
     app.register_blueprint(api_notifications_bp)
 
     # 테이블 자동 생성 (MySQL DB가 이미 존재해야 함)
